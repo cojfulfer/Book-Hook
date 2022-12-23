@@ -100,7 +100,9 @@ def add():
 
 
 	my_library_book = library_book(title, authors, fiction_nonfiction, genres, publisher, year_published, page_range, rating) # sets the book as an obj of the ‘book()’ class
-	print(library)
+	# print(library)
+
+	print(f"You've successfully added {title} by {authors[0]} to your library!")
 
 	welcome()
 
@@ -156,54 +158,49 @@ def numerical_attribute(attribute):  # to ensure that user inputs an integer for
 def remove():
 	# Step 2:  if a key (book) in the ‘library{}’ dictionary contains the title and author user wants to remove, then remove that key (book) from the dictionary
 	library_contents = [elem for key in library for elem in key]
-	removed = False
-	while not removed:
-		removing_title = input("What is the title of the book that you would like to remove from your library?:\n")
-		removing_title_author = input("Who is an author of the book that you would like to remove from your library?:\n")
-		original_length = len(library)
-		for book in library:
-			if removing_title in book:  # if book title within key and book author within 'authors' tuple of any book within 'library()' dictionary, remove that book
-				authors_tuple = library_contents[library_contents.index(removing_title) + 1]
-				for author in authors_tuple:
-					if author == removing_title_author:
-						library.pop(book)  # or ‘del library[book]’
-						removed = True  # to exit out of while loop
-						break  # to exit for loop once found match in dictionary
-			if len(library) != original_length:
-				break
+	removing_title = input("What is the title of the book that you would like to remove from your library?:\n")
+	removing_title_author = input("Who is an author of the book that you would like to remove from your library?:\n")
+	original_length = len(library)
+	for book in library:
+		if removing_title in book:  # if book title within key and book author within 'authors' tuple of any book within 'library()' dictionary, remove that book
+			authors_tuple = library_contents[library_contents.index(removing_title) + 1]
+			for author in authors_tuple:
+				if author == removing_title_author:
+					library.pop(book)  # or ‘del library[book]’
+					print(f"You've successfully removed {removing_title} by {removing_title_author} from your library!")
+					break  # to exit for loop once found match in dictionary
+		if len(library) != original_length:
+			break
 		if len(library) == original_length: # if no change was made to dictionary due to no match being found
 			print("Sorry, that book is not within your library.\n")
-			removed = True
 	welcome()
 
 
 
 def welcome(): # welcome menu
 	print("\nHello there! Welcome to Book Hook, your personal library assistant!\nLet’s find you a book to read.\nDo you have any books that you want to add to or remove from your library?\n")
-	user_choice = ''
-	while user_choice != ('a' or 'f' or 'r' or 'e'):
-		user_choice = input("Enter ‘a’ to add, ‘r’ to remove, ‘f’  to find a book to read, or  ‘e’  to exit:\n").lower()
-		if user_choice == 'a':
-			add()
-		elif user_choice == 'r':
-			if len(library) > 0:
-				remove()
-			else:
-				print("Sorry, there are no books to remove in your library.\n")
-				print("Let’s add you a book!\n")
-				add()
-		elif user_choice == 'f':
-			if len(library) > 0:
-				find()
-			else:
-				print("Sorry, there are no books to search in your library.\n")
-				print("Let’s add you a book!\n")
-				add()
-		elif user_choice == 'e':
-			print("Have a nice day!\n")
-			break
+	user_choice = input("Enter ‘a’ to add, ‘r’ to remove, ‘f’ to find a book to read, or  ‘e’ to exit:\n").lower()
+	if user_choice == 'a':
+		add()
+	elif user_choice == 'r':
+		if len(library) > 0:
+			remove()
 		else:
-			print("Sorry, that is not a valid option.\n")
+			print("Sorry, there are no books to remove in your library.\n")
+			print("Let’s add you a book!\n")
+			add()
+	elif user_choice == 'f':
+		if len(library) > 0:
+			find()
+		else:
+			print("Sorry, there are no books to search in your library.\n")
+			print("Let’s add you a book!\n")
+			add()
+	elif user_choice == 'e':
+		print("Have a nice day!\n")
+		exit()
+	else:
+		print("Sorry, that is not a valid option.\n")
 
 
 
