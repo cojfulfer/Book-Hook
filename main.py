@@ -38,7 +38,7 @@ def add(library):
         if library: # can’t loop through an empty dictionary
             for book in library: # loops through each key (book) of the ‘library{}’ dictionary
                 if title and tuple(authors) in book: # checks whether there is a match
-                    print("Sorry, looks like that book is already in your library\n")
+                    print("Sorry, looks like that book is already in your library.\n")
                     welcome(library) # returns user to welcome menu
                 else:
                     add_book = True # exits while loop
@@ -96,11 +96,11 @@ def multivalued_attribute(list, attribute):  # when there could be more than 1 v
         add_value = 'n'
         while add_value != 'y':
             if attribute == 'author':
-                list.append(input(f"Who is an {attribute} of the book?:\n"))
+                list.append(input(f"Who is an {attribute} of the book?:\n").title()) # just in case user lower-cases the name
                 if len(list) > 1:
                     add_value = input(f"Are these all the {attribute}s of the book? Enter ‘y’ for yes or any other key for no:\n").lower()
                 else:
-                    list.append(input(f"Who is another {attribute} of the book?:\n"))
+                    list.append(input(f"Who is another {attribute} of the book?:\n").title()) # just in case user lower-cases the name
                     add_value = input(f"Are these all the {attribute}s of the book? Enter ‘y’ for yes or any other key for no:\n").lower()
             else:
                 list.append(input(f"What is a {attribute} of the book?:\n").lower())
@@ -111,7 +111,7 @@ def multivalued_attribute(list, attribute):  # when there could be more than 1 v
                     add_value = input(f"Are these all the {attribute}s of the book? Enter ‘y’ for yes or any other key for no:\n").lower()
     else:
         if attribute == 'author':
-            list.append(input(f"Who is the {attribute} of the book?:\n"))
+            list.append(input(f"Who is the {attribute} of the book?:\n").title()) # just in case user lower-cases the name
         else:
             list.append(input(f"What is the {attribute} of the book?:\n").lower())
     return list
@@ -142,7 +142,7 @@ def remove(library):
     # Step 2:  if a key (book) in the ‘library{}’ dictionary contains the title and author user wants to remove, then remove that key (book) from the dictionary
     library_contents = [elem for key in library for elem in key]
     removing_title = input("What is the title of the book that you would like to remove from your library?:\n")
-    removing_title_author = input("Who is an author of the book that you would like to remove from your library?:\n")
+    removing_title_author = input("Who is an author of the book that you would like to remove from your library?:\n").title() # just in case user lower-cases the name
     original_length = len(library)
     for book in library:
         if removing_title in book:  # if book title within key and book author within 'authors' tuple of any book within 'library()' dictionary, remove that book
@@ -154,10 +154,205 @@ def remove(library):
                     break  # to exit for loop once found match in dictionary
         if len(library) != original_length:
             break
-        if len(library) == original_length: # if no change was made to dictionary due to no match being found
-            print("Sorry, that book is not within your library.\n")
+    if len(library) == original_length: # if no change was made to dictionary due to no match being found
+        print("Sorry, that book is not within your library.\n")
+        remove_book = False
+        while not remove_book:
+            user_choice = input("Do you want to add a book, exit, or return to the main menu ? Enter ‘a’ to add, 'e' to exit, or any other key to return to the main menu:\n")
+            if user_choice == 'a':
+                add(library)
+            elif user_choice == 'e':
+                print("Have a nice day!\n")
+                exit()
+            elif user_choice != 'a' or 'e':
+                welcome(library) # returns user to welcome menu
     welcome(library) # returns user to welcome menu
 
+def find(library):
+        # Step 3: ask user hierarchical guiding classification questions ranging from more general to more niche based on book characteristics and provide list of options show far at each level (but don’t show them the book titles with authors until the very end for the last classification)
+        print('Let’s find you a book to read!\n')
+
+        # fiction or nonfiction
+        fiction_books = {}  # dictionary of fiction books within the ‘library{}’ dictionary
+        nonfiction_books = {}  # dictionary of nonfiction books within the ‘library{}’ dictionary
+        count = 0
+        for book in library: # first, we check to see if there are any fiction books
+            if library[book][0] == 'fiction':
+                    count += 1
+        if count == len(library): # if there are only fiction books, so no nonfiction books
+            book_type_books = fiction_books
+            book_type = 'fiction'
+            book_type_books = library_search(book_type, book_type_books, library)
+        elif count == 0: # if there are no fiction books, so only nonfiction books
+            book_type_books = nonfiction_books
+            book_type = 'nonfiction'
+            book_type_books = library_search(book_type, book_type_books, library)
+
+        else: # if there are both fiction and nonfiction
+            fiction_nonfiction_choice = input(("Would you like to read fiction or nonfiction? Enter ‘f’ for fiction or any other key for nonfiction:\n")).lower()
+            if fiction_nonfiction_choice == 'f':
+                book_type_books = fiction_books
+                book_type = 'fiction'
+                book_type_books = library_search(book_type, book_type_books, library)
+            else:
+                book_type_books = nonfiction_books
+                book_type = 'nonfiction'
+                book_type_books = library_search(book_type, book_type_books, library)
+
+        # genre(s)
+        genre_exists = False
+        while not genre_exists:
+            print(f"Here is your list of {book_type} genres:\n")
+            book_type_genres = []  # we will create this empty list and then add the unique elements to this list and then print the elements within this list (don’t even have to refer to the list when printing each genre) 1 by 1
+            for book in book_type_books:
+                for genre in book_type_books[book][1]:
+                    if genre not in book_type_genres:
+                        book_type_genres.append(genre)
+                        print(genre)
+            user_choice = input("\nDo you want to return to the main menu? Enter ‘y’ for yes or any other key for no:\n").lower()
+            if user_choice == 'y':
+                welcome(library) # returns user to welcome menu
+            return_list = search_book_attribute_in_library(book_type_genres, book_type,'genre', genre_exists, library)
+            genre_choice = return_list[0]
+            genre_exists = return_list[1]
+        # for the books that fall under this book type genre, add them to an empty dictionary
+        book_type_genre_books = {}
+        for book in book_type_books:
+            if genre_choice in book_type_books[book][1]:
+                book_type_genre_books[book] = book_type_books[book]
+
+        # publisher
+        publisher_exists = False
+        while not publisher_exists:
+            print(f"Here is your list of {genre_choice} publishers:\n")
+            book_type_genre_publishers = [] # we will create this empty list and then add the unique elements to this list and then print the elements within this list (don’t even have to refer to the list when printing each publisher) 1 by 1
+            for book in book_type_genre_books:  # for each book of the chosen genre,…
+                publisher = book_type_genre_books[book][2]
+                if publisher not in book_type_genre_publishers:  # if that book’s publisher is not within the list, add it
+                    book_type_genre_publishers.append(publisher)
+                    print(publisher)
+            user_choice = input("\nDo you want to return to the main menu? Enter ‘y’ for yes or any other key for no:\n").lower()
+            if user_choice == 'y':
+                welcome(library) # returns user to welcome menu
+            return_list = search_book_attribute_in_library(book_type_genre_publishers, genre_choice, 'publisher', publisher_exists, library)
+            publisher_choice = return_list[0]
+            publisher_exists = return_list[1]
+        # for the books of the chosen book type genre that fall under the chosen publisher, add them to an empty dictionary
+        book_type_genre_publisher_books = {}
+        for book in book_type_genre_books:
+            if book_type_genre_books[book][2] == publisher_choice:
+                book_type_genre_publisher_books[book] = book_type_genre_books[book]
+
+        # year published
+        year_published_exists = False
+        while not year_published_exists:
+            print(f"\nHere is your list of {publisher_choice} published dates:\n")
+            book_type_genre_publisher_published_dates = []  # we will create this empty list and then add the unique elements to this list and then print the elements within this list (don’t even have to refer to the list when printing each published date) 1 by 1
+            for book in book_type_genre_publisher_books:
+                published_date = book_type_genre_publisher_books[book][3]
+                if published_date not in book_type_genre_publisher_published_dates:
+                    book_type_genre_publisher_published_dates.append(published_date)
+                    print(published_date)
+            user_choice = input("\nDo you want to return to the main menu? Enter ‘y’ for yes or any other key for no:\n").lower()
+            if user_choice == 'y':
+                welcome(library) # returns user to welcome menu
+            return_list = search_book_attribute_in_library(book_type_genre_publisher_published_dates, publisher_choice, 'published_date', year_published_exists, library)
+            year_published_choice = return_list[0]
+            year_published_exists = return_list[1]
+            # for the books of the chosen book type genre publisher that fall under the chosen published date, add them to an empty dictionary
+            book_type_genre_publisher_published_date_books = {}
+            for book in book_type_genre_publisher_books:
+                if book_type_genre_publisher_books[book][3] == year_published_choice:
+                    book_type_genre_publisher_published_date_books[book] = book_type_genre_publisher_books[book]
+
+        # page range
+        # ask user whether  they want a light: (> 200) pages, average: (200-400) pages, or heavy: (400+) pages sized book (each classified based on a predetermined page range) instead of number of pages
+        page_range_exists = False
+        while not page_range_exists:
+            print(f"\nHere is your list of {publisher_choice} page ranges for the books published in {year_published_choice}:\n")
+            book_type_genre_publisher_published_dates_page_ranges = []  # we will create this empty list and then add the unique elements to this list and then print the elements within this list (don’t even have to refer to the list when printing each page range) 1 by 1
+            for book in book_type_genre_publisher_published_date_books:
+                page_range = book_type_genre_publisher_published_date_books[book][4]
+                if page_range not in book_type_genre_publisher_published_dates_page_ranges:
+                    book_type_genre_publisher_published_dates_page_ranges.append(page_range)
+                    print(page_range)
+            user_choice = input("\nDo you want to return to the main menu? Enter ‘y’ for yes or any other key for no:\n").lower()
+            if user_choice == 'y':
+                welcome(library) # returns user to welcome menu
+            return_list = search_book_attribute_in_library(book_type_genre_publisher_published_dates_page_ranges, year_published_choice, 'page range', page_range_exists, library)
+            page_range_choice = return_list[0]
+            page_range_exists = return_list[1]
+        # for the books of the chosen book type genre publisher published date that fall under the chosen page range, add them to an empty dictionary
+        book_type_genre_publisher_published_date_page_range_books = {}
+        for book in book_type_genre_publisher_published_date_books:
+            if book_type_genre_publisher_published_date_books[book][4] == page_range_choice:
+                book_type_genre_publisher_published_date_page_range_books[book] = book_type_genre_publisher_published_date_books[book]
+
+        # Step 4: rank the books from best to worst rating
+        def rank(dictionary):  # ranks the remaining books via rating % in descending order
+            descending_ratings = []  # iterate through each book within the dictionary and get the last element of each key's value which is the rating and add the ratings to this list and then sort this list in descending order
+            descending_ratings_books = []  # a list of the corresponding books for the 'descending ratings[]' list
+            for book in dictionary:
+                if dictionary[book][5] not in descending_ratings:
+                    descending_ratings.append(dictionary[book][5])
+            for rating in sorted(descending_ratings, reverse=True):
+                for book in dictionary:  # iterate through each book for each rating in the 'descending ratings[]' list to check whether that book has that rating
+                    if dictionary[book][5] == rating:
+                        if len(book[1]) == 1:  # if the 2nd element of the key is a string, that says that there is only 1 author
+                            sorted_rated_book = book[0] + ' by ' + book[1][0]  # the format for each book before adding to the 'descending_ratings_books[]' list
+                            descending_ratings_books.append(sorted_rated_book)
+                        else:
+                            if len(book[1]) == 2:  # if the 2nd element of the key is not a string but a tuple, that says that there is more than 1 author
+                                sorted_rated_book = book[0] + ' by ' + ' and '.join(book[1][0:2])  # the format for each book before adding to the 'descending_ratings_books[]' list
+                                descending_ratings_books.append(sorted_rated_book)
+                            elif len(book[1]) > 2:
+                                sorted_rated_book = book[0] + ' by ' + ', '.join(book[1][0: -1]) + ', and ' + book[1][-1]  # the format for each book before adding to the 'descending_ratings_books[]' list
+                                descending_ratings_books.append(sorted_rated_book)
+            return descending_ratings_books
+
+        # Step 5: return book(s) that match(es) classification criteria
+        if len(book_type_genre_publisher_published_date_page_range_books) > 1:
+            print(f"\nHere is your list of {genre_choice}, {publisher_choice}, {year_published_choice} books that fall into a page range of {page_range_choice} ranked based on rating percentage in descending order:\n")
+            descending_ratings_books = rank(book_type_genre_publisher_published_date_page_range_books)
+            for book in descending_ratings_books:
+                print(book)
+            print(f"\nYou’ve caught a book!\nYour book is {descending_ratings_books[0]}, enjoy!")
+            welcome(library) # returns user to welcome menu
+        else:
+            descending_ratings_books = rank(book_type_genre_publisher_published_date_page_range_books)
+            print(f"\nYou’ve caught a book!\nYour book is {descending_ratings_books[0]}, enjoy!")
+            welcome(library) # returns user to welcome menu
+
+def library_search(attribute, new_dictionary, library): # loop through ‘library{}’ dictionary to check what books have the attribute and create new dictionary of the books that do
+    for book in library:
+        if library[book][0] == attribute:
+            new_dictionary[book] = library[book] # adding each key value pair (the whole book) to a new dictionary
+    return new_dictionary
+
+
+def search_book_attribute_in_library(list, attribute_type, attribute, attribute_exists, library):  # checks attribute quantity and then checks whether user selects one of those
+    if len(list) > 1 and attribute == 'publisher':
+        attribute_choice = input(f"What {attribute_type} {attribute} do you want to read?:\n").title()
+        if attribute_choice not in list:
+            print(f"Sorry, that {attribute} does not exist in your library.\n")
+            user_choice = input("Do you want to return to the main menu? Enter ‘y’ for yes or any other key for no:\n").lower()
+            if user_choice == 'y':
+                welcome(library) # returns user to welcome menu if not then keep going
+        else:
+            attribute_exists = True
+    elif len(list) > 1:
+        attribute_choice = input(f"What {attribute_type} {attribute} do you want to read?:\n").lower()
+        if attribute_choice not in list:
+            print(f"Sorry, that {attribute} does not exist in your library.\n")
+            user_choice = input("Do you want to return to the main menu? Enter ‘y’ for yes or any other key for no:\n").lower()
+            if user_choice == 'y':
+                welcome(library) # returns user to welcome menu if not then keep going
+        else:
+            attribute_exists = True
+    else:  # no need to prompt user if there’s only 1 option to choose from
+        attribute_choice = list[0]
+        attribute_exists = True
+    return [attribute_choice, attribute_exists]
 
 def process(library):
     user_file_name = input("Enter the name of the .txt file containing your library that you would like to import:\n") # prompt user for their file name
@@ -180,6 +375,7 @@ def process(library):
                 welcome(library) # returns user to welcome menu
             else:
                 process(library) # recursive call to 'process()' function if user chooses to not return to welcome menu
+    print("Your library was successfully imported!\n")
     return library # return dictionary
 
 
@@ -208,61 +404,62 @@ def welcome(library): # welcome menu
             remove(library)
         else:
             print("Sorry, there are no books to remove in your library.\n")
-            user_next_choice = input("Would you like to import an existing library or create a new library? Enter 'i' to import an existing library or any other key to create a new library:\n").lower()
-            if user_next_choice == 'i':
+            user_choice2 = input("Would you like to import an existing library, create a new library, or exit the program? Enter 'i' to import an existing library, 'a' to create a new library, or any other key to exit:\n").lower()
+            if user_choice2 == 'i':
                 library = process(library)
-                welcome(library)
+                welcome(library) # recursive reset of the 'welcome()' function
+            elif user_choice2 == 'a':
+                print("Let’s add you a book!\n")
+                add(library)
+            else:
+                print("Have a nice day!\n")
+                exit()
+    elif user_choice == 'f':
+        if len(library) > 0:
+            find(library)
+        else:
+            print("Sorry, there are no books to search in your library.\n")
+            user_choice2 = input("Would you like to import an existing library or create a new library? Enter 'i' to import an existing library or any other key to create a new library:\n").lower()
+            if user_choice2 == 'i':
+               library = process(library)
+               welcome(library) # recursive reset of the 'welcome()' function
             else:
                 print("Let’s add you a book!\n")
                 add(library)
-    # elif user_choice == 'f':
-    # 	if len(library) > 0:
-    # 		find(library)
-    # 	else:
-    # 		print("Sorry, there are no books to search in your library.\n")
-    #         user_next_choice = input("Would you like to import an existing library or create a new library? Enter 'i' to import an existing library or any other key to create a new library:\n").lower()
-    #         if user_next_choice == 'i':
-    #            library = process(library)
-    #            welcome(library)
-    #         else:
-    #             print("Let’s add you a book!\n")
-    #             add(library)
     elif user_choice == 'i':
         if len(library) == 0:
             library = process(library)
-            welcome(library)
+            welcome(library) # recursive reset of the 'welcome()' function
         else:
-            user_next_choice = input("Your current library will be overwritten with the library that you import. Do you wish to continue?. Enter 'y' for yes or any other key for no:\n").lower()
-            if user_next_choice == 'y':
+            user_choice2 = input("Your current library will be overwritten with the library that you import. Do you wish to continue? Enter 'y' for yes or any other key for no:\n").lower() # warn user
+            if user_choice2 == 'y':
                 library = process(library)
-                welcome(library)
+                welcome(library) # recursive reset of the 'welcome()' function
             else:
-                welcome(library)
+                welcome(library) # recursive reset of the 'welcome()' function
     elif user_choice == 'o':
         if len(library) > 0:
             output(library)
         else:
             print("Sorry, there is no library to output.\n")
-            user_next_choice = input("Would you like to import an existing library or create a new library? Enter 'i' to import an existing library or any other key to create a new library:\n").lower()
-            if user_next_choice == 'i':
+            user_choice2 = input("Would you like to import an existing library or create a new library? Enter 'i' to import an existing library or any other key to create a new library:\n").lower()
+            if user_choice2 == 'i':
                 library = process(library)
-                welcome(library)
+                welcome(library) # recursive reset of the 'welcome()' function
             else:
                 print("Let’s add you a book!\n")
                 add(library)
-            print("Let’s add you a book!\n")
-            add(library)
     elif user_choice == 'e':
         print("Have a nice day!\n")
         exit()
     else:
-        print("Sorry, that is not a valid option.\n")
-        welcome(library)
+        print("Sorry, that is not a valid option.\n") # if user enters a non-valid option
+        welcome(library) # recursive reset of the 'welcome()' function
 
 
 
 if __name__  == '__main__':
-    library = {}  # in the end, there will be multiple “self_key”s and “self_value”s for each book in this dictionary: {
+    library = {}  # in the end, there will be multiple “self_key”s and “self_value”s for each book in this dictionary:
     # {
     # (book1Title, (book1Author1, book1Author2, …)) : [book1Fiction/Nonfiction, [book1Genre1, book1Genre2, book1Genre3, …], book1Publisher, book1YearPublished,
     # book1PageRange, book1Rating],
