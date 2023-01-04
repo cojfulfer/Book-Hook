@@ -20,7 +20,9 @@ The 'output()' function will convert the user's library dictionary to a .txt fil
 Lastly, the 'process()' function will allow the user to import a .txt file of their library dictionary from previous program executions so that the user wouldn't have to re-enter all books and their characteristics each time they run the program. 
 
 Bonus Version:
-add edition to book classification because 2 books may have the same title and author but they are different books 
+add edition to book classification because 2 books may have the same title and author but they are different books
+
+enable the user to add their library file to the already existing library in the program
 
 enable the user to input multiple publishers for one book
 
